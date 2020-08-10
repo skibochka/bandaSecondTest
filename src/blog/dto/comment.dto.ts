@@ -1,24 +1,29 @@
-import { IsString, IsNotEmpty, MinLength, MaxLength} from 'class-validator';
-import { ObjectID } from 'typeorm';
+import {
+  IsString, IsNotEmpty, MinLength, MaxLength, IsObject,
+} from 'class-validator';
 
-export class commentDto {
+export default class commentDto {
   @IsString()
   _id: string;
 
+  @IsNotEmpty()
+  @IsString()
+  postId: string;
+
   @IsString()
   @IsNotEmpty()
-  author: string;
+  userId: string;
 
   @IsString()
   @IsNotEmpty()
   @MinLength(1, {
-    message: "Title is too short"
+    message: 'Title is too short',
   })
   @MaxLength(50, {
-    message: "Title is too long"
+    message: 'Title is too long',
   })
   readonly content: string;
 
-  @IsString()
-  likes: string
+  @IsObject()
+  likes: string[];
 }

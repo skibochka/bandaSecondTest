@@ -1,20 +1,18 @@
-import { IsString, IsObject, IsNotEmpty, MinLength, MaxLength} from 'class-validator';
+import {
+  IsString, IsObject, IsNotEmpty, MinLength, MaxLength,
+} from 'class-validator';
 
-export class postDto {
+export default class postDto {
   @IsString()
-  _id: string;
-
-  @IsString()
-  @IsNotEmpty()
-  readonly article_id: string;
+  readonly _id: string;
 
   @IsString()
   @IsNotEmpty()
   @MinLength(3, {
-    message: "Title is too short"
+    message: 'Title is too short',
   })
   @MaxLength(15, {
-    message: "Title is too long"
+    message: 'Title is too long',
   })
   readonly title: string;
 
@@ -23,7 +21,11 @@ export class postDto {
   readonly content: string;
 
   @IsString()
-  likes: string;
+  @IsNotEmpty()
+  userId: string;
+
+  @IsObject()
+  likes: string[] | [];
 
   @IsObject()
   comments: object;

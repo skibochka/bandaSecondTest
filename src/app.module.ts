@@ -1,9 +1,11 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { BlogModule } from './blog/blog.module';
-import { AuthModule } from './auth/auth.module';
-import { Posts } from './blog/blog.entity';
-import { Users } from './auth/auth.entity';
+import BlogModule from './blog/blog.module';
+import AuthModule from './auth/auth.module';
+import Posts from './blog/entitys/post.entity';
+import Users from './users/users.entity';
+import Comments from './blog/entitys/comment.entity';
+import UsersModule from './users/users.module';
 import 'dotenv/config';
 
 @Module({
@@ -12,11 +14,11 @@ import 'dotenv/config';
       type: 'mongodb',
       url: process.env.MONGO_URI,
       database: 'blog_db',
-      entities: [Posts, Users],
+      entities: [Posts, Users, Comments],
       logging: true,
       useNewUrlParser: true,
-      useUnifiedTopology: true
+      useUnifiedTopology: true,
     }),
-    BlogModule, AuthModule]
+    BlogModule, AuthModule, UsersModule],
 })
-export class AppModule {}
+export default class AppModule {}
