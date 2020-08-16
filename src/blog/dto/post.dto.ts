@@ -22,15 +22,12 @@ export default class postDto {
 
   @IsString()
   @IsNotEmpty()
-  userId: string;
+  public userId: string;
 
   @IsObject()
-  likes: string[] | [];
-
-  @IsObject()
-  comments: object;
+  public likes: string[] | [];
 
   @IsString()
   @IsNotEmpty()
-  createdAt: string;
+  public createdAt: string;
 }

@@ -5,6 +5,7 @@ import Posts from './entitys/post.entity';
 import Comments from './entitys/comment.entity';
 import postDto from './dto/post.dto';
 import commentDto from './dto/comment.dto';
+import { IUpdate } from './Interfaces/IUpdate';
 
 @Injectable()
 export default class BlogService {
@@ -20,7 +21,7 @@ export default class BlogService {
     return this.postsRepository.save(data);
   }
 
-  postUpdate(_id: string, data: any) {
+  postUpdate(_id: string, data: IUpdate) {
     return this.postsRepository.update(_id, { title: data.title, content: data.content });
   }
 
@@ -28,19 +29,23 @@ export default class BlogService {
     return this.postsRepository.update(_id, { likes });
   }
 
-  getPost(_id:string): Promise<Posts | undefined> {
+  getPost(_id: string): Promise<Posts | undefined> {
     return this.postsRepository.findOne(_id);
   }
 
-  newComment(data:commentDto): Promise<Comments> {
+  getComments(_id: string): Promise<object> {
+    return this.commentRepository.find({ postId: _id });
+  }
+
+  newComment(data: commentDto): Promise<Comments> {
     return this.commentRepository.save(data);
   }
 
-  getComment(_id:string) {
+  getComment(_id: string): Promise<Comments> {
     return this.commentRepository.findOne(_id);
   }
 
-  commentLike(_id:string, likes:string[]) {
+  commentLike(_id: string, likes:string[]) {
     return this.commentRepository.update(_id, { likes });
   }
 }
