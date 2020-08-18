@@ -7,8 +7,8 @@ import BlogService from './blog.service';
 import postDto from './dto/post.dto';
 import commentDto from './dto/comment.dto';
 import 'dotenv/config';
-import { IPost } from './Interfaces/IPost';
-import { IComment } from './Interfaces/IComment';
+import { IPost } from './interfaces/IPost';
+import { IComment } from './interfaces/IComment';
 
 @Controller('blog')
 export default class BlogController {
@@ -16,13 +16,13 @@ export default class BlogController {
 
   @UseGuards(AuthGuard('jwt'))
   @Post('/post')
-  async newPost(@Request() req, @Response() res, @Body() profile: postDto) {
+  async newPost(@Request() req, @Response() res, @Body() postData: postDto) {
     const token: string = req.headers.authorization.split(' ')[1];
     const payload: any = jwt.verify(token, process.env.KEY);
     const post: IPost = await this.blogService.newPost({
-      _id: profile._id,
-      title: profile.title,
-      content: profile.content,
+      _id: postData._id,
+      title: postData.title,
+      content: postData.content,
       likes: [],
       createdAt: new Date().toLocaleDateString(),
       userId: payload._id,
@@ -32,15 +32,15 @@ export default class BlogController {
 
   @UseGuards(AuthGuard('jwt'))
   @Post('/update')
-  async postUpdate(@Response() res, @Request() req, @Body() profile: postDto) {
+  async postUpdate(@Response() res, @Request() req, @Body() postData: postDto) {
     const token = req.headers.authorization.split(' ')[1];
     const payload: any = jwt.verify(token, process.env.KEY);
-    const post: IPost = await this.blogService.getPost(profile._id);
+    const post: IPost = await this.blogService.getPost(postData._id);
 
     if (post.userId === payload._id) {
-      const result = await this.blogService.postUpdate(profile._id, {
-        title: profile.title,
-        content: profile.content,
+      const result = await this.blogService.postUpdate(postData._id, {
+        title: postData.title,
+        content: postData.content,
       });
       return res.status(HttpStatus.OK).json(result);
     }
@@ -49,15 +49,15 @@ export default class BlogController {
 
   @UseGuards(AuthGuard('jwt'))
   @Post('/like')
-  async postLike(@Request() req, @Response() res, @Body() profile: postDto) {
+  async postLike(@Request() req, @Response() res, @Body() data: postDto) {
     const token: string = req.headers.authorization.split(' ')[1];
     const payload: any = jwt.verify(token, process.env.KEY);
-    const post: IPost = await this.blogService.getPost(profile._id);
+    const post: IPost = await this.blogService.getPost(data._id);
     const answer: boolean = post.likes.some((element) => payload._id === element);
 
     if (!answer) {
       post.likes.push(payload._id);
-      const result = await this.blogService.postLike(profile._id, post.likes);
+      const result = await this.blogService.postLike(data._id, post.likes);
       return res.status(HttpStatus.OK).json(result);
     }
     return 'You liked this post';
@@ -81,14 +81,14 @@ export default class BlogController {
 
   @UseGuards(AuthGuard('jwt'))
   @Post('/comment')
-  async newComment(@Request() req, @Response() res, @Body() profile: commentDto) {
+  async newComment(@Request() req, @Response() res, @Body() commentData: commentDto) {
     const token: string = req.headers.authorization.split(' ')[1];
     const payload: any = jwt.verify(token, process.env.KEY);
     const comment: IComment = await this.blogService.newComment({
-      _id: profile._id,
-      postId: profile.postId,
+      _id: commentData._id,
+      postId: commentData.postId,
       userId: payload._id,
-      content: profile.content,
+      content: commentData.content,
       likes: [],
     });
 
@@ -97,15 +97,15 @@ export default class BlogController {
 
   @UseGuards(AuthGuard('jwt'))
   @Post('/likecomment')
-  async likeComment(@Request() req, @Response() res, @Body() profile: commentDto) {
+  async likeComment(@Request() req, @Response() res, @Body() data: commentDto) {
     const token: string = req.headers.authorization.split(' ')[1];
     const payload: any = jwt.verify(token, process.env.KEY);
-    const comment: IComment = await this.blogService.getComment(profile._id);
+    const comment: IComment = await this.blogService.getComment(data._id);
     const answer: boolean = comment.likes.some((element) => payload._id === element);
 
     if (!answer) {
       comment.likes.push(payload._id);
-      const result = await this.blogService.commentLike(profile._id, comment.likes);
+      const result = await this.blogService.commentLike(data._id, comment.likes);
       return res.status(HttpStatus.OK).json(result);
     }
     return res.status(HttpStatus.OK).json({ msg: 'You have already liked this comment' });

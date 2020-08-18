@@ -1,6 +1,16 @@
 import {
-  Controller, UseGuards, HttpStatus, Response, Post, Body, Request,
-  Delete, HttpCode, Param, UnauthorizedException, NotFoundException,
+  Controller,
+  UseGuards,
+  HttpStatus,
+  Response,
+  Post,
+  Body,
+  Request,
+  Delete,
+  HttpCode,
+  Param,
+  UnauthorizedException,
+  NotFoundException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import 'dotenv/config';
@@ -8,7 +18,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { JwtService } from '@nestjs/jwt';
 import AuthService from './auth.service';
 import UsersService from '../users/users.service';
-import UserDto from '../users/user.dto';
+import UserDto from '../users/dto/user.dto';
 import LoginDto from './dto/login.dto';
 import RefreshTokenDto from './dto/refreshToken.dto';
 import { IUpdate } from './interfaces/IUpdate';
@@ -41,7 +51,6 @@ export default class AuthController {
       });
     }
     const token = await this.authService.login(user);
-    console.log(token);
     return res.status(HttpStatus.OK).json(token);
   }
 

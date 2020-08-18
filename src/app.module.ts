@@ -3,9 +3,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { RedisModule } from 'nestjs-redis';
 import BlogModule from './blog/blog.module';
 import AuthModule from './auth/auth.module';
-import Posts from './blog/entitys/post.entity';
-import Users from './users/users.entity';
-import Comments from './blog/entitys/comment.entity';
+import Posts from './blog/entities/post.entity';
+import Users from './users/entities/users.entity';
+import Comments from './blog/entities/comment.entity';
 import UsersModule from './users/users.module';
 import 'dotenv/config';
 

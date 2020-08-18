@@ -1,18 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import Posts from './entitys/post.entity';
-import Comments from './entitys/comment.entity';
+import Posts from './entities/post.entity';
+import Comments from './entities/comment.entity';
 import postDto from './dto/post.dto';
 import commentDto from './dto/comment.dto';
-import { IUpdate } from './Interfaces/IUpdate';
+import { IUpdate } from './interfaces/IUpdate';
 
 @Injectable()
 export default class BlogService {
   constructor(
     @InjectRepository(Posts)
     private readonly postsRepository: Repository<Posts>,
-
     @InjectRepository(Comments)
     private readonly commentRepository: Repository<Comments>,
   ) {}
@@ -22,7 +21,7 @@ export default class BlogService {
   }
 
   postUpdate(_id: string, data: IUpdate) {
-    return this.postsRepository.update(_id, { title: data.title, content: data.content });
+    return this.postsRepository.update(_id, data);
   }
 
   postLike(_id: string, likes: string[]) {

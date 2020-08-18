@@ -6,8 +6,8 @@ import UsersService from '../users/users.service';
 import { IJwtPayload } from './interfaces/JwtPayload';
 import { IRegistrationStatus } from './interfaces/IRegistrationStatus';
 import { IAuthLoginInput } from './interfaces/IAuthLoginInput';
-import UserDto from '../users/user.dto';
-import Users from '../users/users.entity';
+import UserDto from '../users/dto/user.dto';
+import Users from '../users/entities/users.entity';
 import 'dotenv/config';
 
 @Injectable()
