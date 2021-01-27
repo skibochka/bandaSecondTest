@@ -32,7 +32,7 @@
                                 </button>
                             </div>
                             <div class="mt-4 text-center">
-                                Don't have an account? <a href="https://aboyko.shpp.me:3435/register">Create One</a>
+                                Don't have an account? <a href="http://aboyko.shpp.me:3435/register">Create One</a>
                             </div>
                         </form>
                     </div>
@@ -58,7 +58,7 @@
 
       const config = {
         method: 'post',
-        url: 'https://aboyko.shpp.me:3435/auth/sign-in',
+        url: 'http://aboyko.shpp.me:3435/auth/sign-in',
         headers: {
           'Content-Type': 'application/json'
         },
@@ -70,7 +70,7 @@
           if (res.status === 200) {
             localStorage.setItem('accessToken', res.data.accessToken);
             localStorage.setItem('refreshToken', res.data.refreshToken);
-            $(location).prop('href', 'https://aboyko.shpp.me:3435/posts');
+            $(location).prop('href', 'http://aboyko.shpp.me:3435/posts');
           }
         })
         .catch(function (error) {

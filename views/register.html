@@ -37,7 +37,7 @@
                                 </button>
                             </div>
                             <div class="mt-4 text-center">
-                                Already have an account? <a href="https://aboyko.shpp.me:3435/login">Login</a>
+                                Already have an account? <a href="http://aboyko.shpp.me:3435/login">Login</a>
                             </div>
                         </form>
                     </div>
@@ -63,7 +63,7 @@
 
       const config = {
         method: 'post',
-        url: 'https://aboyko.shpp.me:3435/auth/sign-up',
+        url: 'http://aboyko.shpp.me:3435/auth/sign-up',
         headers: {
           'Content-Type': 'application/json'
         },
@@ -72,7 +72,7 @@
 
       axios(config)
         .then(() => {
-          $(location).prop('href', 'https://aboyko.shpp.me:3435/login');
+          $(location).prop('href', 'http://aboyko.shpp.me:3435/login');
         })
         .catch(function (error) {
           console.log(error);
