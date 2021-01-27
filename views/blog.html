@@ -1,0 +1,379 @@
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css">
+    <title>Simple Blog</title>
+</head>
+<body>
+<div class="container">
+
+    <div class="py-5 text-center">
+        <h2>Simple blog</h2>
+        <div style="position: absolute; right: 30px; top: 30px" >
+            <a href="https://aboyko.shpp.me:3435/login">Sig-in</a>
+            <br>
+            <a href="https://aboyko.shpp.me:3435/register">Sign-up</a>
+        </div>
+    </div>
+
+    <div id="posts"></div>
+    <div id="pages"></div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="createRoomModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create new post</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="newPost">
+                        <label for="title">Title</label>
+                        <input type="text" name="name" id="title" autocomplete="off" placeholder="Enter title" class="form-control">
+                        <br>
+                        <label for="content">Content</label>
+                        <input type="text" name="name" id="content" autocomplete="off" placeholder="Your post here" class="form-control">
+                        <br>
+                        <input type="submit" value="Create" class="btn btn-danger">
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+  $(function() {
+    const domen = 'https://aboyko.shpp.me:3435';
+    drawPosts();
+    let currentPage = 0;
+    $(".container").on('submit', async (event) => {
+        event.preventDefault();
+        const action = event.target.id.split('-');
+        if (event.target.id === 'newPost') {
+            const data = {
+                title: $('#title').val(),
+                content: $('#content').val(),
+            }
+            const config = {
+                method: 'post',
+                url: `${domen}/blog/post`,
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+                    'Content-Type': 'application/json'
+                },
+                data: data,
+            };
+
+            const response = await axios(config).catch(err => {
+                alert('Please login');
+                $(location).prop('href', '${domen}/login');
+            });
+            openPost(response.data);
+        }
+        if (event.target.id === 'nextPage') {
+          $('#posts').html('');
+          $('#pages').html('');
+          await drawPosts(currentPage + 1);
+          currentPage += 1;
+          if (currentPage > 0 ) {
+            $('#pages').append(`
+              <form  id="backPage">
+                <input type="submit" value="Back" class="btn btn-lite">
+              </form>
+            `)
+          }
+        }
+      if (event.target.id === 'backPage') {
+        $('#posts').html('');
+        $('#pages').html('');
+        await drawPosts(currentPage - 1);
+        currentPage -= 1;
+        if (currentPage > 0 ) {
+          $('#pages').append(`
+              <form  id="backPage">
+                <input type="submit" value="Back" class="btn btn-lite">
+              </form>
+            `)
+        }
+      }
+        if (action[0] === 'read') {
+            const config = {
+                method: 'get',
+                url: `${domen}/blog/post/${action[1]}`,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+            };
+
+            const response = await axios(config);
+            openPost(response.data);
+        }
+        if (action[0] === 'like') {
+
+                const config = {
+                    method: 'get',
+                    url: `${domen}/blog/post/${action[1]}/like`,
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+                        'Content-Type': 'application/json'
+                    },
+                };
+
+                const response = await axios(config).catch(err => {
+                    alert('Please login');
+                    $(location).prop('href', '${domen}/login');
+                });
+                if (response.data.msg) {
+                    alert(response.data.msg);
+                }
+
+
+        }
+        if (action[0] === 'comments') {
+            const config = {
+                method: 'get',
+                url: `${domen}/blog/post/${action[1]}/comments`,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+            };
+
+            const response = await axios(config);
+            $(`#postComments-${action[1]}`).html(`
+                <div style="border: 4px double cadetblue; padding: 5px"><h3>Comments:</h3></div>
+            `)
+            response.data.forEach((comment) => {
+                $(`#postComments-${action[1]}`).append(`
+                    <div style="border: 4px double cadetblue; padding: 5px">
+                      <p>${comment.content}</p>
+                      <br>
+                      <p>Likes: ${comment.likes.length}</p>
+                      <form  id="commentLike-${comment._id}">
+                        <input type="submit" value="like ❤️️" class="btn btn-lite">
+                      </form>
+                    </div>
+                `);
+            });
+        }
+        if (action[0] === 'delete') {
+            const config = {
+                method: 'delete',
+                url: `${domen}/blog/post/${action[1]}/delete`,
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+                    'Content-Type': 'application/json'
+                },
+            };
+            const response = await axios(config).catch(err => {
+                alert('Please login');
+                $(location).prop('href', '${domen}/login');
+            });
+            if (response.status === 401) {
+              $(location).prop('href', `${domen}/login`);
+            }
+            if (response.data.msg) {
+                alert(response.data.msg)
+            } else {
+                $(location).prop('href', `${domen}/posts`);
+            }
+        }
+        if (action[0] === 'update') {
+            const data = {
+                _id: action[1],
+                title: $('#title').val(),
+                content: $('#content').val()
+            }
+            const config = {
+                method: 'post',
+                url: `${domen}/blog/post/update`,
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+                    'Content-Type': 'application/json'
+                },
+                data: data,
+            };
+            const response = await axios(config).catch(err => {
+                alert('Please login');
+                $(location).prop('href', `${domen}/login`);
+            });
+            if (response.data.msg) {
+                alert(response.data.msg);
+            } else {
+                alert('Updated');
+            }
+        }
+        if (action[0] === 'comment') {
+            const data = {
+              postId: action[1],
+              content: $(`#commentContent-${action[1]}`).val()
+            };
+
+            const config = {
+                method: 'post',
+                url: `${domen}/blog/post/comment`,
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+                    'Content-Type': 'application/json'
+                },
+                data: data,
+            };
+
+            await axios(config).catch(err => {
+                alert('Please login');
+                $(location).prop('href', `${domen}/login`);
+            });
+        }
+        if (action[0] === 'commentLike') {
+            const config = {
+                method: 'post',
+                url: `${domen}/blog/post/comment/like/${action[1]}`,
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+                    'Content-Type': 'application/json'
+                },
+            };
+
+            const response = await axios(config).catch(err => {
+                alert('Please login');
+                $(location).prop('href', `${domen}/login`);
+            });
+            if (response.data.msg) {
+                alert(response.data.msg);
+            }
+        }
+    })
+
+    async function getPosts(page) {
+      const config = {
+        method: 'get',
+        url: `${domen}/blog/page/${page}`,
+        headers: {
+          'Content-Type': 'application/json'
+        },
+      };
+
+      const response = await axios(config);
+      return response.data;
+    }
+
+    async function countPosts() {
+      const config = {
+        method: 'get',
+        url: `${domen}/blog/count`,
+        headers: {
+          'Content-Type': 'application/json'
+        },
+      };
+
+      const response = await axios(config);
+      return parseInt(response.data);
+    }
+
+    function openPost(post) {
+        $('#pages').html('');
+        $('#posts').html(`
+          <div id="${post._id}Content" style="border: 4px double cadetblue; margin-bottom: 4px; padding: 4px">
+            <h2 style="text-align: center">${post.title}</h2>
+            <p>${post.content}</p>
+            <br>
+            <i id="likes">Likes: ${post.likes.length}</i>
+            <br>
+            <i>Created at: ${post.createdAt}</i>
+            <!-- Button trigger modal -->
+            <button  style="position: absolute; right: 180px; top: 145px" type="button" class="btn btn-lite" data-toggle="modal" data-target="#updatePost">
+               ✏️
+            </button>
+            <form style="position: absolute; right: 150px; top: 145px" id="delete-${post._id}">
+              <input type="submit" value="🗑️️" class="btn btn-lite">
+            </form>
+            <form style="position: absolute; right: 210px;" id="comments-${post._id}">
+              <input type="submit" value="comments 💬️️" class="btn btn-lite">
+            </form>
+            <form style="position: absolute; right: 150px;" id="like-${post._id}">
+              <input type="submit" value="like ❤️️" class="btn btn-lite">
+            </form>
+          </div>
+          <a href="${domen}/posts">All posts</a>
+          <div id="postComments-${post._id}"></div>
+          <form id="comment-${post._id}">
+            <label for="commentContent-${post._id}">Your comment</label>
+            <textarea name="comment" id="commentContent-${post._id}" class="form-control"" placeholder="Enter your comment"></textarea>
+            <input type="submit" value="Add" class="btn btn-danger">
+          </form>
+          <!-- Modal -->
+          <div class="modal fade" id="updatePost" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title">Update post</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                  <form id="update-${post._id}">
+                    <label for="title">Title</label>
+                    <input type="text" name="name" id="title" autocomplete="off" placeholder="Enter title" class="form-control">
+                    <br>
+                    <label for="content">Content</label>
+                    <input type="text" name="name" id="content" autocomplete="off" placeholder="Your post here" class="form-control">
+                    <br>
+                    <input type="submit" value="Update" class="btn btn-danger">
+                  </form>
+                </div>
+              </div>
+            </div>
+           </div>
+          `);
+    }
+
+    async function drawPosts(page = 0) {
+      const posts = await getPosts(page);
+
+      const $postsPlace = $('#posts');
+      posts.forEach((post) => {
+        $postsPlace.append(`
+          <div id="${post._id}Content" style="border: 4px double cadetblue; margin-bottom: 4px; padding: 4px">
+            <h3>${post.title}</h3>
+            <div style="position: absolute; right: 170px;">
+              <i>Created at: ${post.createdAt}</i>
+              <br>
+              <i>Likes: ${post.likes.length}</i>
+            </div>
+            <form id="read-${post._id}">
+              <input type="submit" value="Read" class="btn btn-danger">
+            </form>
+          </div>
+          `);
+      });
+      $postsPlace.append(`
+      <!-- Button trigger modal -->
+      <button  style="position: absolute; right: 150px;" type="button" class="btn btn-danger" data-toggle="modal" data-target="#createRoomModal">
+      Create post
+      </button>`);
+      const postValue = await countPosts();
+      if (postValue > 2) {
+      $('#pages').append(`
+        <form  id="nextPage">
+          <input type="submit" value="Next" class="btn btn-lite">
+        </form>
+      `)
+      }
+    }
+  });
+
+
+</script>
+</body>
+</html>
